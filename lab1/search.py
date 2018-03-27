@@ -19,6 +19,7 @@ Pacman agents (in searchAgents.py).
 
 import util
 import copy
+import storages
 
 class SearchNode:
     """
@@ -146,6 +147,23 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+
+def basicSearch(problem, storage):
+    startState = problem.getStartState()
+    startNode = SearchNode(startState, None, None, 0, 0)
+    storage.addNode(startNode)
+    visitedStates = {}
+    while True:
+        node = storage.getNode()
+        if problem.isGoalState(node.position):
+            return node.backtrack()
+        successors = problem.getSuccessors(node.position)
+        for i in range(0, len(successors)):
+            successor = successors[i]
+            if not (successor[0] in problem._visited):
+                successorNode = SearchNode(successor[0], node, successor[1], 0, 0)
+                storage.addNode(successorNode)
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -155,25 +173,8 @@ def depthFirstSearch(problem):
 
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
-"""
-    startState = problem.getStartState()
-    startNode = SearchNode(startState, None, None, 0, 0)
-    stack = util.Stack()
-    stack.push(startNode)
-    visitedStates = {}
-    while True:
-        # if stack.isEmpty() == True:
-        #     break
-        node = stack.pop()
-        if(problem.isGoalState(node.position)):
-            return node.backtrack()
-        successors = problem.getSuccessors(node.position)
-        for i in range(0, len(successors)):
-            successor =  successors[i]
-            if not(successor[0] in problem._visited):
-                successorNode = SearchNode(successor[0],node,successor[1],0,0)
-                stack.push(successorNode)
-
+    """
+    return basicSearch(problem, storages.StackStorage())
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
