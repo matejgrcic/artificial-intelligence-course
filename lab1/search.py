@@ -68,10 +68,29 @@ class SearchNode:
 
         if node.isRootNode(): 
             # The initial state is the final state
-            return moves        
+            return moves
 
-        "**YOUR CODE HERE**"
-        util.raiseNotDefined()
+        from game import Directions
+        s = Directions.SOUTH
+        w = Directions.WEST
+        n = Directions.NORTH
+        e = Directions.EAST
+
+        while True:
+            if node.transition == 'West':
+                moves.append(w)
+            if node.transition == 'South':
+                moves.append(s)
+            if node.transition == 'North':
+                moves.append(n)
+            if node.transition == 'East':
+                moves.append(e)
+            if node.isRootNode() == True:
+                break
+            node = node.parent
+        moves = moves[::-1]
+        return moves
+
 
 
 class SearchProblem:
@@ -136,13 +155,25 @@ def depthFirstSearch(problem):
 
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
+"""
+    startState = problem.getStartState()
+    startNode = SearchNode(startState, None, None, 0, 0)
+    stack = util.Stack()
+    stack.push(startNode)
+    visitedStates = {}
+    while True:
+        # if stack.isEmpty() == True:
+        #     break
+        node = stack.pop()
+        if(problem.isGoalState(node.position)):
+            return node.backtrack()
+        successors = problem.getSuccessors(node.position)
+        for i in range(0, len(successors)):
+            successor =  successors[i]
+            if not(successor[0] in problem._visited):
+                successorNode = SearchNode(successor[0],node,successor[1],0,0)
+                stack.push(successorNode)
 
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())
-    """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
