@@ -152,18 +152,18 @@ def basicSearch(problem, storage):
     startState = problem.getStartState()
     startNode = SearchNode(startState, None, None, 0, 0)
     storage.addNode(startNode, 0)
-    visitedStates = {}
+    # visitedStates = {}
     while True:
         node = storage.getNode()
-        visitedStates[node.position] = True
+        # storage.visitedStates[node.position] = True
+        storage.addVisitedState(node.position, node.cost)
         if problem.isGoalState(node.position):
             return node.backtrack()
         successors = problem.getSuccessors(node.position)
         for i in range(0, len(successors)):
             successor = successors[i]
-            if not (successor[0] in visitedStates):
-                successorNode = SearchNode(successor[0], node, successor[1], 0, 0)
-                storage.addNode(successorNode,successor[2])
+            successorNode = SearchNode(successor[0], node, successor[1], successor[2], 0)
+            storage.addNode(successorNode,successor[2])
 
 def depthFirstSearch(problem):
     """
@@ -196,8 +196,9 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return basicSearch(problem, storages.PriorityQueueStorageWithFunction(heuristic, problem))
+
+
 
 
 # Abbreviations
