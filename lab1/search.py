@@ -155,12 +155,13 @@ def basicSearch(problem, storage):
     visitedStates = {}
     while True:
         node = storage.getNode()
+        visitedStates[node.position] = True
         if problem.isGoalState(node.position):
             return node.backtrack()
         successors = problem.getSuccessors(node.position)
         for i in range(0, len(successors)):
             successor = successors[i]
-            if not (successor[0] in problem._visited):
+            if not (successor[0] in visitedStates):
                 successorNode = SearchNode(successor[0], node, successor[1], 0, 0)
                 storage.addNode(successorNode)
 
@@ -179,7 +180,7 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return basicSearch(problem, storages.ListStorage())
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
