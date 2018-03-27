@@ -151,7 +151,7 @@ def tinyMazeSearch(problem):
 def basicSearch(problem, storage):
     startState = problem.getStartState()
     startNode = SearchNode(startState, None, None, 0, 0)
-    storage.addNode(startNode)
+    storage.addNode(startNode, 0)
     visitedStates = {}
     while True:
         node = storage.getNode()
@@ -163,7 +163,7 @@ def basicSearch(problem, storage):
             successor = successors[i]
             if not (successor[0] in visitedStates):
                 successorNode = SearchNode(successor[0], node, successor[1], 0, 0)
-                storage.addNode(successorNode)
+                storage.addNode(successorNode,successor[2])
 
 def depthFirstSearch(problem):
     """
@@ -185,7 +185,7 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return basicSearch(problem,storages.PriorityQueueStorage())
 
 def nullHeuristic(state, problem=None):
     """
