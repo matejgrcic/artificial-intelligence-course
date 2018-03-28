@@ -232,7 +232,7 @@ def uniformCostSearch(problem):
         successors = problem.getSuccessors(node.position)
         for i in range(0, len(successors)):
             successor = successors[i]
-            successorNode = SearchNode(successor[0], node, successor[1], successor[2], 0)
+            successorNode = SearchNode(successor[0], node, successor[1], successor[2] + node.cost, 0)
             front.push(successorNode, successorNode.cost)
 
 
