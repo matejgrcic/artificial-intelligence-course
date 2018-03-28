@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -19,7 +19,6 @@ Pacman agents (in searchAgents.py).
 
 import util
 import copy
-import storages
 
 class SearchNode:
     """
@@ -32,9 +31,9 @@ class SearchNode:
 
     def __init__(self, position, parent=None, transition=None, cost=0, heuristic=0):
         """
-        Basic constructor which copies the values. Remember, you can access all the 
-        values of a python object simply by referencing them - there is no need for 
-        a getter method. 
+        Basic constructor which copies the values. Remember, you can access all the
+        values of a python object simply by referencing them - there is no need for
+        a getter method.
         """
         self.position = position
         self.parent = parent
@@ -42,12 +41,17 @@ class SearchNode:
         self.heuristic = heuristic
         self.transition = transition
 
+    def __eq__(self, other):
+        if other == None:
+            return False
+        return self.position == other.position
+
     def isRootNode(self):
         """
         Check if the node has a parent.
         returns True in case it does, False otherwise
         """
-        return self.parent == None 
+        return self.parent == None
 
     def unpack(self):
         """
@@ -60,14 +64,14 @@ class SearchNode:
     def backtrack(self):
         """
         Reconstruct a path to the initial state from the current node.
-        Bear in mind that usually you will reconstruct the path from the 
+        Bear in mind that usually you will reconstruct the path from the
         final node to the initial.
         """
         moves = []
         # make a deep copy to stop any referencing isues.
         node = copy.deepcopy(self)
 
-        if node.isRootNode(): 
+        if node.isRootNode():
             # The initial state is the final state
             return moves
 
@@ -77,17 +81,8 @@ class SearchNode:
         n = Directions.NORTH
         e = Directions.EAST
 
-        while True:
-            if node.transition == 'West':
-                moves.append(w)
-            if node.transition == 'South':
-                moves.append(s)
-            if node.transition == 'North':
-                moves.append(n)
-            if node.transition == 'East':
-                moves.append(e)
-            if node.isRootNode() == True:
-                break
+        while node.parent != None:
+            moves.append(node.transition)
             node = node.parent
         moves = moves[::-1]
         return moves
@@ -148,22 +143,22 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 
-def basicSearch(problem, storage):
-    startState = problem.getStartState()
-    startNode = SearchNode(startState, None, None, 0, 0)
-    storage.addNode(startNode, 0)
-    # visitedStates = {}
-    while True:
-        node = storage.getNode()
-        # storage.visitedStates[node.position] = True
-        storage.addVisitedState(node.position, node.cost)
-        if problem.isGoalState(node.position):
-            return node.backtrack()
-        successors = problem.getSuccessors(node.position)
-        for i in range(0, len(successors)):
-            successor = successors[i]
-            successorNode = SearchNode(successor[0], node, successor[1], successor[2], 0)
-            storage.addNode(successorNode,successor[2])
+# def basicSearch(problem, storage):
+#     startState = problem.getStartState()
+#     startNode = SearchNode(startState, None, None, 0, 0)
+#     storage.addNode(startNode, 0)
+#     # visitedStates = {}
+#     while True:
+#         node = storage.getNode()
+#         # storage.visitedStates[node.position] = True
+#         storage.addVisitedState(node.position, node.cost)
+#         if problem.isGoalState(node.position):
+#             return node.backtrack()
+#         successors = problem.getSuccessors(node.position)
+#         for i in range(0, len(successors)):
+#             successor = successors[i]
+#             successorNode = SearchNode(successor[0], node, successor[1], successor[2], 0)
+#             storage.addNode(successorNode,successor[2])
 
 def depthFirstSearch(problem):
     """
@@ -175,17 +170,71 @@ def depthFirstSearch(problem):
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
     """
-    return basicSearch(problem, storages.StackStorage())
+    startState = problem.getStartState()
+    startNode = SearchNode(startState, None, None, 0, 0)
+    front = [startNode]
+    visitedStates = []
+    # visitedStates = {}
+    while len(front) != 0:
+        node = front.pop()
+        if node in visitedStates:
+            continue
+        # storage.visitedStates[node.position] = True
+        if problem.isGoalState(node.position):
+            return node.backtrack()
+        visitedStates.append(node)
+        successors = problem.getSuccessors(node.position)
+        for i in range(0, len(successors)):
+            successor = successors[i]
+            successorNode = SearchNode(successor[0], node, successor[1], successor[2], 0)
+            front.append(successorNode)
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    return basicSearch(problem, storages.ListStorage())
+    startState = problem.getStartState()
+    startNode = SearchNode(startState, None, None, 0, 0)
+    front = util.Queue()
+    front.push(startNode)
+    visitedStates = []
+
+    while not front.isEmpty():
+        node = front.pop()
+        if node in visitedStates:
+            continue
+        # storage.visitedStates[node.position] = True
+        if problem.isGoalState(node.position):
+            return node.backtrack()
+        visitedStates.append(node)
+        successors = problem.getSuccessors(node.position)
+        for i in range(0, len(successors)):
+            successor = successors[i]
+            successorNode = SearchNode(successor[0], node, successor[1], successor[2], 0)
+            front.push(successorNode)
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    return basicSearch(problem,storages.PriorityQueueStorage())
+    startState = problem.getStartState()
+    startNode = SearchNode(startState, None, None, 0, 0)
+    front = util.PriorityQueue()
+    front.push(startNode, startNode.cost)
+    visitedStates = []
+
+    while not front.isEmpty():
+        node = front.pop()
+        if node in visitedStates:
+            continue
+        if problem.isGoalState(node.position):
+            return node.backtrack()
+        visitedStates.append(node)
+        successors = problem.getSuccessors(node.position)
+        for i in range(0, len(successors)):
+            successor = successors[i]
+            successorNode = SearchNode(successor[0], node, successor[1], successor[2], 0)
+            front.push(successorNode, successorNode.cost)
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -196,8 +245,7 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    return basicSearch(problem, storages.PriorityQueueStorageWithFunction(heuristic, problem))
-
+    util.raiseNotDefined()
 
 
 
