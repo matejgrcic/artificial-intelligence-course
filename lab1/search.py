@@ -46,6 +46,9 @@ class SearchNode:
             return False
         return self.position == other.position
 
+    def __hash__(self):
+        return hash(self.position)
+
     def isRootNode(self):
         """
         Check if the node has a parent.
@@ -249,7 +252,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     startNode = SearchNode(startState, None, None, 0, 0)
     front = util.PriorityQueue()
     front.push(startNode, startNode.cost)
-    visitedStates = []
+    visitedStates = {}
     open = {}
     open[startNode.position] = 0
 
@@ -259,17 +262,18 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             continue
         if problem.isGoalState(node.position):
             return node.backtrack()
-        visitedStates.append(node)
+        visitedStates[node] = True
         successors = problem.getSuccessors(node.position)
         for i in range(0, len(successors)):
             successor = successors[i]
             successorNode = SearchNode(successor[0], node, successor[1], successor[2] + node.cost, 0)
-            if successorNode.position in open.keys():
+            if successorNode.position in open:
                 if open[successorNode.position] < successorNode.cost:
                     continue
                 else:
                     del open[successorNode.position]
-            totalCost = max(successorNode.cost + heuristic(successorNode.position, problem), node.cost)
+            totalCost = max(successorNode.cost + heuristic(successorNode.position, problem), node.heuristic)
+            successorNode.heuristic = totalCost
             front.push(successorNode, totalCost)
 
 
