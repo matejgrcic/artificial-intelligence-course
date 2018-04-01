@@ -145,24 +145,6 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
-
-# def basicSearch(problem, storage):
-#     startState = problem.getStartState()
-#     startNode = SearchNode(startState, None, None, 0, 0)
-#     storage.addNode(startNode, 0)
-#     # visitedStates = {}
-#     while True:
-#         node = storage.getNode()
-#         # storage.visitedStates[node.position] = True
-#         storage.addVisitedState(node.position, node.cost)
-#         if problem.isGoalState(node.position):
-#             return node.backtrack()
-#         successors = problem.getSuccessors(node.position)
-#         for i in range(0, len(successors)):
-#             successor = successors[i]
-#             successorNode = SearchNode(successor[0], node, successor[1], successor[2], 0)
-#             storage.addNode(successorNode,successor[2])
-
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -177,12 +159,10 @@ def depthFirstSearch(problem):
     startNode = SearchNode(startState, None, None, 0, 0)
     front = [startNode]
     visitedStates = []
-    # visitedStates = {}
     while len(front) != 0:
         node = front.pop()
         if node in visitedStates:
             continue
-        # storage.visitedStates[node.position] = True
         if problem.isGoalState(node.position):
             return node.backtrack()
         visitedStates.append(node)
@@ -205,7 +185,6 @@ def breadthFirstSearch(problem):
         node = front.pop()
         if node in visitedStates:
             continue
-        # storage.visitedStates[node.position] = True
         if problem.isGoalState(node.position):
             return node.backtrack()
         visitedStates.append(node)

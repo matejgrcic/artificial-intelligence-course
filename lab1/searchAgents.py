@@ -473,19 +473,6 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     list = foodGrid.asList()
-    # z = bool(problem.heuristicInfo)
-    # if not bool(problem.heuristicInfo) :
-    #     problem.firstIter = True
-    #     for i in range(0,problem.walls.width + 1):
-    #         for j in range(0, problem.walls.height + 1):
-    #             farthest = 0
-    #             for food in list:
-    #                 x = util.manhattanDistance((i, j), food)
-    #                 if x > farthest:
-    #                     farthest = x
-    #
-    #             problem.heuristicInfo[(i,j)] = farthest
-    #     print 'a'
 
     farthest = 0
     for food in list:
