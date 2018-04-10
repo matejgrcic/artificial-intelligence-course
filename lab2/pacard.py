@@ -94,9 +94,12 @@ def logicBasedSearch(problem):
     """
     # array in order to keep the ordering
     visitedStates = []
+    visited = {}
+    opened = {}
     currentState = problem.getStartState()
     while True:
         visitedStates.append(currentState)
+        visited[currentState] = True
         if problem.isGoalState(currentState):
             return reconstructPathFromStates(visitedStates)
         followingStates = problem.getSuccessors(currentState)
@@ -107,37 +110,34 @@ def logicBasedSearch(problem):
         attributes['O'] = []
         for followingState in followingStates:
             state = followingState[0]
+            if state in visited:
+                continue
             if chech_is_W(state, problem) or chech_is_P(state, problem):
                 continue
             if chech_is_T(state, problem):
                 attributes['TTTT'] = state
                 break
-            elif problem.isTeleporterClose(state):
+            if problem.isTeleporterClose(state):
                 attributes['T'].append(state)
-            elif problem.isPoisonCapsuleClose(state):
+            if problem.isPoisonCapsuleClose(state):
                 attributes['P'].append(state)
-            elif problem.isWumpusClose(state):
+            if problem.isWumpusClose(state):
                 attributes['W'].append(state)
-            else:
-                attributes['O'].append(state)
+            attributes['O'].append(state)
 
         if 'TTTT' in attributes.keys():
             currentState = attributes['TTTT']
-            continue
         elif len(attributes['T']) > 0:
-            currentState = get_best_from_list(attributes['T'])
-            continue
+            currentState = get_best_from_list(attributes['T'], opened)
         elif len(attributes['O']) > 0:
-            currentState = get_best_from_list(attributes['O'])
-            continue
+            currentState = get_best_from_list(attributes['O'], opened)
         elif len(attributes['P']) > 0:
-            currentState = get_best_from_list(attributes['P'])
-            continue
+            currentState = get_best_from_list(attributes['P'], opened)
         else:
-            currentState = get_best_from_list(attributes['W'])
-            continue
+            currentState = get_best_from_list(attributes['W'], opened)
 
-
+        for followingState in followingStates:
+            opened[followingState[0]] = True
 
 
     return reconstructPathFromStates(visitedStates)
@@ -186,16 +186,26 @@ def reconstructPathFromStates(states):
         currentState = next
     return path
 
-def get_best_from_list(list):
+def get_best_from_list(list, opened):
     min = 999999
     index = -1
     for i in range(0,len(list)):
         x,y = list[i]
         val = 20*x + y
-        if val < min:
+        if val < min and not list[i] in opened.keys():
             min = val
             index = i
-    return list[index]
+    if index != -1:
+        return list[index]
+    else:
+        min = 999999
+        index = -1
+        for i in range(0, len(list)):
+            x, y = list[i]
+            val = 20 * x + y
+            if val < min:
+                min = val
+                index = i
 
 def chech_is_W(state, problem):
     followingStates = problem.getSuccessors(state)
