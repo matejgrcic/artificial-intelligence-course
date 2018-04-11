@@ -241,21 +241,18 @@ def resolution(clauses, goal):
 
     setOfSupport = goal.negateAll()
     resolvedPairs = set()
-    allClauses = clauses.union(setOfSupport)
-    new = set()
     while True:
-        new.clear()
-        removeRedundant(allClauses)
-        resolvablePairs = selectClauses(allClauses, resolvedPairs)
+        removeRedundant(clauses,setOfSupport)
+        resolvablePairs = selectClauses(clauses,setOfSupport, resolvedPairs)
         for pair in resolvablePairs:
             resolvedPairs.add(pair)
             resolvents = resolvePair(pair[0], pair[1])
             if len(resolvents.literals) == 0:
                 return True
-            new.add(resolvents)
-        if new.issubset(allClauses):
+            setOfSupport.add(resolvents)
+        if setOfSupport.issubset(clauses):
             return False
-        allClauses = allClauses.union(new)
+        setOfSupport = setOfSupport.union(clauses)
 
     """
     ####################################
@@ -266,14 +263,20 @@ def resolution(clauses, goal):
     """
 
 
-# def removeRedundant(clauses, setOfSupport):
-def removeRedundant(allClauses):
-    clauses = set(allClauses)
-    for clause in clauses:
-        helperClauses = set(clauses)
+def removeRedundant(clauses, setOfSupport):
+    clausesCopy = set(clauses)
+    for clause in clausesCopy:
+        helperClauses = set(clausesCopy)
         helperClauses.discard(clause)
-        if clause.isRedundant(helperClauses):
-            allClauses.remove(clause)
+        if clause.isRedundant(helperClauses) or clause.isRedundant(setOfSupport):
+            clauses.remove(clause)
+
+    sosCopy = set(setOfSupport)
+    for clause in sosCopy:
+        helperSos = set(sosCopy)
+        helperSos.discard(clause)
+        if clause.isRedundant(helperSos) or clause.isRedundant(clauses):
+            setOfSupport.remove(clause)
 
     """
     Remove redundant clauses (clauses that are subsets of other clauses)
@@ -282,7 +285,7 @@ def removeRedundant(allClauses):
     original sets. (why?)
     """
 
-
+#done
 def resolvePair(firstClause, secondClause):
     literals = firstClause.literals.union(secondClause.literals)
 
@@ -298,11 +301,11 @@ def resolvePair(firstClause, secondClause):
     """
 
 
-# def selectClauses(clauses, setOfSupport, resolvedPairs):
-def selectClauses(clauses, resolvedPairs):
+#done
+def selectClauses(clauses, setOfSupport, resolvedPairs):
     pairs = set()
-    for first in clauses:
-        for second in clauses:
+    for first in setOfSupport:
+        for second in clauses.union(setOfSupport):
             if first.isResolveableWith(second):
                 if (first, second) in resolvedPairs or (second, first) in resolvedPairs or (second, first) in pairs:
                     continue
