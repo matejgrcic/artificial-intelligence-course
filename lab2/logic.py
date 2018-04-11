@@ -1,5 +1,6 @@
-import util 
-import functools 
+import util
+import functools
+
 
 class Labels:
     """
@@ -14,7 +15,7 @@ class Labels:
     Some sets for simpler checks
     >>> if literal.label in Labels.DEADLY: 
     >>>     # Don't go there!!!
-    """ 
+    """
     DEADLY = set([WUMPUS, POISON])
     WTP = set([WUMPUS, POISON, TELEPORTER])
 
@@ -34,8 +35,8 @@ def stateWeight(state):
     The maps will never be 
     larger than 20x20, and therefore this weighting will be consistent.
     """
-    x, y = state 
-    return 20*x + y 
+    x, y = state
+    return 20 * x + y
 
 
 @functools.total_ordering
@@ -51,14 +52,14 @@ class Literal:
         Set all values. Notice that the state is remembered twice - you
         can use whichever representation suits you better.
         """
-        x,y = state 
-        
-        self.x = x 
-        self.y = y 
-        self.state = state 
+        x, y = state
+
+        self.x = x
+        self.y = y
+        self.state = state
 
         self.negative = negative
-        self.label = label 
+        self.label = label
 
     def __key(self):
         """
@@ -136,7 +137,7 @@ class Literal:
         return self.label == Labels.TELEPORTER
 
 
-class Clause: 
+class Clause:
     """ 
     A disjunction of finitely many unique literals. 
     The Clauses have to be in the CNF so that resolution can be applied to them. The code 
@@ -151,7 +152,7 @@ class Clause:
     >>> LiteralC = Literal('c', (0, 0), False)
 
     >>> premise = Clause(set([[LiteralNotB, LiteralC]]))
-    """ 
+    """
 
     def __init__(self, literals):
         """
@@ -171,10 +172,10 @@ class Clause:
         if the other clause contains a negation of one of the literals.
         e.g., (~A) and (A v ~B) are examples of two clauses containing opposite literals 
         """
-        for literal in self.literals: 
+        for literal in self.literals:
             if literal.negate() in otherClause.literals:
-                return True 
-        return False 
+                return True
+        return False
 
     def isRedundant(self, otherClauses):
         """
@@ -237,8 +238,25 @@ def resolution(clauses, goal):
     and simplification strategies. We urge you to go through the slides and 
     carefully design the code before implementing.
     """
+
+    setOfSupport = goal.negateAll()
     resolvedPairs = set()
-    setOfSupport = goal.negateAll() 
+    allClauses = clauses.union(setOfSupport)
+    new = set()
+    while True:
+        new.clear()
+        removeRedundant(allClauses)
+        resolvablePairs = selectClauses(allClauses, resolvedPairs)
+        for pair in resolvablePairs:
+            resolvedPairs.add(pair)
+            resolvents = resolvePair(pair[0], pair[1])
+            if len(resolvents.literals) == 0:
+                return True
+            new.add(resolvents)
+        if new.issubset(allClauses):
+            return False
+        allClauses = allClauses.union(new)
+
     """
     ####################################
     ###                              ###
@@ -247,41 +265,54 @@ def resolution(clauses, goal):
     ####################################
     """
 
-def removeRedundant(clauses, setOfSupport):
+
+# def removeRedundant(clauses, setOfSupport):
+def removeRedundant(allClauses):
+    clauses = set(allClauses)
+    for clause in clauses:
+        helperClauses = set(clauses)
+        helperClauses.discard(clause)
+        if clause.isRedundant(helperClauses):
+            allClauses.remove(clause)
+
     """
     Remove redundant clauses (clauses that are subsets of other clauses)
     from the aforementioned sets. 
     Be careful not to do the operation in-place as you will modify the 
     original sets. (why?)
-    ####################################
-    ###                              ###
-    ###        YOUR CODE HERE        ###
-    ###                              ###
-    ####################################
     """
-    pass 
+
 
 def resolvePair(firstClause, secondClause):
+    literals = firstClause.literals.union(secondClause.literals)
+
+    for literal in firstClause.literals:
+        if literal.negate() in secondClause.literals:
+            literals.remove(literal)
+            literals.remove(literal.negate())
+            break
+    return Clause(literals)
+
     """
     Resolve a pair of clauses.
-    ####################################
-    ###                              ###
-    ###        YOUR CODE HERE        ###
-    ###                              ###
-    ####################################
     """
-    pass 
 
-def selectClauses(clauses, setOfSupport, resolvedPairs):
+
+# def selectClauses(clauses, setOfSupport, resolvedPairs):
+def selectClauses(clauses, resolvedPairs):
+    pairs = set()
+    for first in clauses:
+        for second in clauses:
+            if first.isResolveableWith(second):
+                if (first, second) in resolvedPairs or (second, first) in resolvedPairs or (second, first) in pairs:
+                    continue
+                pairs.add((first, second))
+
+    return pairs
     """
     Select pairs of clauses to resolve.
-    ####################################
-    ###                              ###
-    ###        YOUR CODE HERE        ###
-    ###                              ###
-    ####################################
     """
-    pass 
+
 
 def testResolution():
     """
@@ -290,10 +321,11 @@ def testResolution():
     """
     premise1 = Clause(set([Literal('a', (0, 0), True), Literal('b', (0, 0), False)]))
     premise2 = Clause(set([Literal('b', (0, 0), True), Literal('c', (0, 0), False)]))
-    premise3 = Clause(Literal('a', (0,0)))
+    premise3 = Clause(Literal('a', (0, 0)))
 
-    goal = Clause(Literal('c', (0,0)))
+    goal = Clause(Literal('c', (0, 0)))
     print resolution(set([premise1, premise2, premise3]), goal)
+
 
 if __name__ == '__main__':
     """
@@ -301,5 +333,5 @@ if __name__ == '__main__':
     >>> python logic.py 
 
     this is the starting point of the code which will run. 
-    """ 
-    testResolution() 
+    """
+    testResolution()
