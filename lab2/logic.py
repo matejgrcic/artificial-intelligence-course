@@ -244,15 +244,17 @@ def resolution(clauses, goal):
     while True:
         removeRedundant(clauses,setOfSupport)
         resolvablePairs = selectClauses(clauses,setOfSupport, resolvedPairs)
+        new = set()
         for pair in resolvablePairs:
             resolvedPairs.add(pair)
             resolvents = resolvePair(pair[0], pair[1])
             if len(resolvents.literals) == 0:
                 return True
-            setOfSupport.add(resolvents)
-        if setOfSupport.issubset(clauses):
+            new.add(resolvents)
+        if new.issubset(clauses):
             return False
-        setOfSupport = setOfSupport.union(clauses)
+
+        setOfSupport = setOfSupport.union(new)
 
     """
     ####################################
@@ -266,17 +268,8 @@ def resolution(clauses, goal):
 def removeRedundant(clauses, setOfSupport):
     clausesCopy = set(clauses)
     for clause in clausesCopy:
-        helperClauses = set(clausesCopy)
-        helperClauses.discard(clause)
-        if clause.isRedundant(helperClauses) or clause.isRedundant(setOfSupport):
+        if clause.isRedundant(setOfSupport):
             clauses.remove(clause)
-
-    sosCopy = set(setOfSupport)
-    for clause in sosCopy:
-        helperSos = set(sosCopy)
-        helperSos.discard(clause)
-        if clause.isRedundant(helperSos) or clause.isRedundant(clauses):
-            setOfSupport.remove(clause)
 
     """
     Remove redundant clauses (clauses that are subsets of other clauses)
