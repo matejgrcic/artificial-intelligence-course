@@ -100,6 +100,25 @@ def logicBasedSearch(problem):
     visitedStates = []
     startState = problem.getStartState()
     visitedStates.append(startState)
+
+
+    safeStates = util.PriorityQueueWithFunction(priority_function)
+    safeStates.push(startState)
+
+    unsecureStates = {}
+    knowledgeBase = set()
+
+    while True:
+        currentstate = safeStates.pop()
+
+        #osjeti smradiove
+        successors = problem.getSuccessors()
+        for successor in successors:
+            #knowledgebase, is whumpus zakljuci sto je
+
+
+
+
     """
     ####################################
     ###                              ###
@@ -122,6 +141,10 @@ def logicBasedSearch(problem):
         ###                              ###
         ####################################
 """
+
+def priority_function(state):
+    x, y = state
+    return 20*x + y
 
 # Abbreviations
 lbs = logicBasedSearch
