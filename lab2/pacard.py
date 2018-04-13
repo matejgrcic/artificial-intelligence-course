@@ -136,6 +136,7 @@ def logicBasedSearch(problem):
         check_for_stench(currentstate, problem, knowledgeBase)
         check_for_fumes(currentstate, problem, knowledgeBase)
         check_for_glow(currentstate, problem, knowledgeBase)
+        check_for_safe(currentstate,problem,knowledgeBase)
 
 
         successors = problem.getSuccessors(currentstate)
@@ -150,6 +151,8 @@ def logicBasedSearch(problem):
             currentKnowledge.append(conclude_whumpus(successor[0], knowledgeBase, False))
             currentKnowledge.append(conclude_poison(successor[0], knowledgeBase, False))
             currentKnowledge.append(conclude_teleporter(successor[0], knowledgeBase, False))
+            currentKnowledge.append(conclude_safe(successor[0], knowledgeBase, False))
+            currentKnowledge.append(conclude_safe(successor[0], knowledgeBase, True))
 
             if currentKnowledge[0]:
                 knowledgeBase.add(Clause(set([Literal(Labels.WUMPUS, successor[0], True)])))
@@ -170,8 +173,8 @@ def logicBasedSearch(problem):
                 knowledgeBase.add(Clause(set([Literal(Labels.TELEPORTER, successor[0], False)])))
                 print 'Concluded: t{}'.format(successor[0])
 
-            #nije w i nije p sigurno je
-            if currentKnowledge[0] and currentKnowledge[1]:
+            #safe
+            if currentKnowledge[0] and currentKnowledge[1] :
                 knowledgeBase.add(Clause(set([Literal(Labels.SAFE, successor[0], False)])))
                 print 'Concluded: o{}'.format(successor[0])
 
@@ -182,7 +185,8 @@ def logicBasedSearch(problem):
                 if successor[0] in unsureStates.keys():
                     unsureStates.pop(successor[0])
             #ne znam sta je
-            else :
+            else:
+                knowledgeBase.add(Clause(set([Literal(Labels.SAFE, successor[0], True)])))
                 unsureStates[successor[0]] = True
                 unsureStatesQueue.push(successor[0])
 
@@ -206,6 +210,9 @@ def conclude_teleporter(state, knowledgeBase, isTrue):
     premise = Clause(set([Literal(Labels.TELEPORTER, state, isTrue)]))
     return resolution(knowledgeBase, premise)
 
+def conclude_safe(state, knowledgeBase, isTrue):
+    premise = Clause(set([Literal(Labels.SAFE, state, isTrue)]))
+    return resolution(knowledgeBase, premise)
 
 def check_for_stench(state, problem, knowledgeBase):
     x = 's'
@@ -221,6 +228,13 @@ def check_for_stench(state, problem, knowledgeBase):
     else:
         for successor in problem.getSuccessors(state):
             knowledgeBase.add(Clause(set([Literal(Labels.WUMPUS, successor[0], True)])))
+
+def check_for_safe(state, problem, knowledgeBase):
+
+    if not problem.isWumpusClose(state) and not problem.isPoisonCapsuleClose(state):
+        knowledgeBase.add(Clause(set([Literal(Labels.SAFE, state, False)])))
+        for successor in problem.getSuccessors(state):
+            knowledgeBase.add(Clause(set([Literal(Labels.SAFE, successor[0], False)])))
 
 
 def check_for_glow(state, problem, knowledgeBase):

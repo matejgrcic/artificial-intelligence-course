@@ -267,6 +267,12 @@ def resolution(clauses, goal):
 
 def removeRedundant(clauses, setOfSupport):
     clausesCopy = set(clauses)
+    for clause in clauses:
+        for first in clause.literals:
+            for second in clause.literals:
+                if first.negate() == second:
+                    clauses.remove(clause)
+
     for clause in clausesCopy:
         if clause.isRedundant(setOfSupport):
             clauses.remove(clause)
