@@ -101,23 +101,133 @@ def logicBasedSearch(problem):
     startState = problem.getStartState()
     visitedStates.append(startState)
 
-
-    safeStates = util.PriorityQueueWithFunction(priority_function)
+    safeStates = util.PriorityQueueWithFunction(stateWeight)
     safeStates.push(startState)
-
+    unsureStates = set()
     unsecureStates = {}
     knowledgeBase = set()
 
     while True:
         currentstate = safeStates.pop()
+        visitedStates.append(currentstate)
+        print 'Visiting: {}'.format(currentstate)
 
-        #osjeti smradiove
-        successors = problem.getSuccessors()
+        if problem.isGoalState(currentstate):
+            print 'Game over: Teleported home!'
+            return problem.reconstructPath(visitedStates)
+
+        check_for_stench(currentstate, problem, knowledgeBase)
+        check_for_fumes(currentstate, problem, knowledgeBase)
+        check_for_glow(currentstate, problem, knowledgeBase)
+
+
+        successors = problem.getSuccessors(currentstate)
+        # for successor in set(successors).union(unsecureStates):
         for successor in successors:
-            #knowledgebase, is whumpus zakljuci sto je
+            if successor[0] in unsecureStates.keys() or successor[0] in visitedStates:
+                continue
+            currentKnowledge = []
+            currentKnowledge.append(conclude_whumpus(successor[0], knowledgeBase, True))
+            currentKnowledge.append(conclude_poison(successor[0], knowledgeBase, True))
+            currentKnowledge.append(conclude_teleporter(successor[0], knowledgeBase, True))
+            currentKnowledge.append(conclude_whumpus(successor[0], knowledgeBase, False))
+            currentKnowledge.append(conclude_poison(successor[0], knowledgeBase, False))
+            currentKnowledge.append(conclude_teleporter(successor[0], knowledgeBase, False))
+
+            if currentKnowledge[0]:
+                knowledgeBase.add(Clause(set([Literal(Labels.WUMPUS, successor[0], True)])))
+                print 'Concluded: ~w{}'.format(successor[0])
+            if currentKnowledge[1]:
+                knowledgeBase.add(Clause(set([Literal(Labels.POISON, successor[0], True)])))
+                print 'Concluded: ~p{}'.format(successor[0])
+            if currentKnowledge[2]:
+                knowledgeBase.add(Clause(set([Literal(Labels.TELEPORTER, successor[0], True)])))
+                print 'Concluded: ~t{}'.format(successor[0])
+            if currentKnowledge[3]:
+                knowledgeBase.add(Clause(set([Literal(Labels.WUMPUS, successor[0], False)])))
+                print 'Concluded: w{}'.format(successor[0])
+            if currentKnowledge[4]:
+                knowledgeBase.add(Clause(set([Literal(Labels.POISON, successor[0], False)])))
+                print 'Concluded: p{}'.format(successor[0])
+            if currentKnowledge[5]:
+                knowledgeBase.add(Clause(set([Literal(Labels.TELEPORTER, successor[0], False)])))
+                print 'Concluded: t{}'.format(successor[0])
+
+            #nije w i nije p sigurno je
+            if currentKnowledge[0] and currentKnowledge[1]:
+                knowledgeBase.add(Clause(set([Literal(Labels.SAFE, successor[0], False)])))
+                print 'Concluded: o{}'.format(successor[0])
+
+                safeStates.push(successor[0])
+                unsureStates.discard(successor[0])
+            #ne znam sta je
+            else :
+                unsureStates.add(successor)
+
+            if currentKnowledge[3] or currentKnowledge[4]:
+                unsecureStates[successor[0]] = True
+                unsureStates.discard(successor[0])
 
 
+def conclude_whumpus(state, knowledgeBase, isTrue):
+    premise = Clause(set([Literal(Labels.WUMPUS, state, isTrue)]))
+    return resolution(knowledgeBase, premise)
 
+
+def conclude_poison(state, knowledgeBase, isTrue):
+    premise = Clause(set([Literal(Labels.POISON, state, isTrue)]))
+    return resolution(knowledgeBase, premise)
+
+
+def conclude_teleporter(state, knowledgeBase, isTrue):
+    premise = Clause(set([Literal(Labels.TELEPORTER, state, isTrue)]))
+    return resolution(knowledgeBase, premise)
+
+
+def check_for_stench(state, problem, knowledgeBase):
+    x = 's'
+    if not problem.isWumpusClose(state):
+        x = '~s'
+    print "Sensed: {}{}".format(x, state)
+
+    if problem.isWumpusClose(state):
+        literals = set()
+        for successor in problem.getSuccessors(state):
+            literals.add(Literal(Labels.WUMPUS, successor[0], False))
+        knowledgeBase.add(Clause(literals))
+    else:
+        for successor in problem.getSuccessors(state):
+            knowledgeBase.add(Clause(set([Literal(Labels.WUMPUS, successor[0], True)])))
+
+
+def check_for_glow(state, problem, knowledgeBase):
+    x = 'g'
+    if not problem.isTeleporterClose(state):
+        x = '~g'
+    print "Sensed: {}{}".format(x, state)
+    if problem.isTeleporterClose(state):
+        literals = set()
+        for successor in problem.getSuccessors(state):
+            literals.add(Literal(Labels.TELEPORTER, successor[0], False))
+        knowledgeBase.add(Clause(literals))
+    else:
+        for successor in problem.getSuccessors(state):
+            knowledgeBase.add(Clause(set([Literal(Labels.TELEPORTER, successor[0], True)])))
+
+
+def check_for_fumes(state, problem, knowledgeBase):
+    x = 'b'
+    if not problem.isPoisonCapsuleClose(state):
+        x = '~b'
+    print "Sensed: {}{}".format(x, state)
+    if problem.isPoisonCapsuleClose(state):
+        literals = set()
+        for successor in problem.getSuccessors(state):
+            literals.add(Literal(Labels.POISON, successor[0], False))
+        knowledgeBase.add(Clause(literals))
+    else:
+        for successor in problem.getSuccessors(state):
+            knowledgeBase.add(Clause(set([Literal(Labels.POISON, successor[0], True)])))
 
     """
     ####################################
@@ -142,9 +252,11 @@ def logicBasedSearch(problem):
         ####################################
 """
 
+
 def priority_function(state):
     x, y = state
-    return 20*x + y
+    return 20 * x + y
+
 
 # Abbreviations
 lbs = logicBasedSearch
