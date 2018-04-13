@@ -103,6 +103,8 @@ def logicBasedSearch(problem):
 
     safeStates = util.PriorityQueueWithFunction(stateWeight)
     safeStates.push(startState)
+    safeStateDict = {}
+    safeStateDict[startState] = True
     unsureStates = {}
     unsureStatesQueue = util.PriorityQueueWithFunction(stateWeight)
 
@@ -114,6 +116,7 @@ def logicBasedSearch(problem):
 
         if not safeStates.isEmpty():
             currentstate = safeStates.pop()
+            del safeStateDict[currentstate]
         elif not unsureStatesQueue.isEmpty():
             currentstate = unsureStatesQueue.pop()
             if not currentstate in unsureStates:
@@ -172,7 +175,10 @@ def logicBasedSearch(problem):
                 knowledgeBase.add(Clause(set([Literal(Labels.SAFE, successor[0], False)])))
                 print 'Concluded: o{}'.format(successor[0])
 
-                safeStates.push(successor[0])
+                if not successor[0] in safeStateDict.keys():
+                    safeStates.push(successor[0])
+                    safeStateDict[successor[0]] = True
+
                 if successor[0] in unsureStates.keys():
                     unsureStates.pop(successor[0])
             #ne znam sta je
