@@ -103,12 +103,26 @@ def logicBasedSearch(problem):
 
     safeStates = util.PriorityQueueWithFunction(stateWeight)
     safeStates.push(startState)
-    unsureStates = set()
+    unsureStates = {}
+    unsureStatesQueue = util.PriorityQueueWithFunction(stateWeight)
+
     unsecureStates = {}
     knowledgeBase = set()
 
     while True:
-        currentstate = safeStates.pop()
+        currentstate = None
+
+        if not safeStates.isEmpty():
+            currentstate = safeStates.pop()
+        elif not unsureStatesQueue.isEmpty():
+            currentstate = unsureStatesQueue.pop()
+            if not currentstate in unsureStates:
+                continue
+        else:
+            currentstate = problem.getStartState()
+            return
+
+
         visitedStates.append(currentstate)
         print 'Visiting: {}'.format(currentstate)
 
@@ -159,14 +173,17 @@ def logicBasedSearch(problem):
                 print 'Concluded: o{}'.format(successor[0])
 
                 safeStates.push(successor[0])
-                unsureStates.discard(successor[0])
+                if successor[0] in unsureStates.keys():
+                    unsureStates.pop(successor[0])
             #ne znam sta je
             else :
-                unsureStates.add(successor)
+                unsureStates[successor[0]] = True
+                unsureStatesQueue.push(successor[0])
 
             if currentKnowledge[3] or currentKnowledge[4]:
                 unsecureStates[successor[0]] = True
-                unsureStates.discard(successor[0])
+                if successor[0] in unsureStates.keys():
+                    unsureStates.pop(successor[0])
 
 
 def conclude_whumpus(state, knowledgeBase, isTrue):
