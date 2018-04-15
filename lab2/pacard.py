@@ -110,11 +110,13 @@ def logicBasedSearch(problem):
 
     unsecureStates = {}
     knowledgeBase = set()
-
+    teleporterState = None
     while True:
         currentstate = None
 
-        if not safeStates.isEmpty():
+        if teleporterState != None:
+            currentstate = teleporterState
+        elif not safeStates.isEmpty():
             currentstate = safeStates.pop()
             del safeStateDict[currentstate]
         elif not unsureStatesQueue.isEmpty():
@@ -131,6 +133,7 @@ def logicBasedSearch(problem):
 
         if problem.isGoalState(currentstate):
             print 'Game over: Teleported home!'
+            visitedStates = pathFn(problem,currentstate,visitedStates)
             return problem.reconstructPath(visitedStates)
 
         check_for_stench(currentstate, problem, knowledgeBase)
@@ -172,6 +175,9 @@ def logicBasedSearch(problem):
             if currentKnowledge[5]:
                 knowledgeBase.add(Clause(set([Literal(Labels.TELEPORTER, successor[0], False)])))
                 print 'Concluded: t{}'.format(successor[0])
+                teleporterState = successor[0]
+                break
+
 
             #safe
             if currentKnowledge[0] and currentKnowledge[1] :
@@ -290,10 +296,18 @@ def check_for_fumes(state, problem, knowledgeBase):
 """
 
 
-def priority_function(state):
-    x, y = state
-    return 20 * x + y
-
+def pathFn(problem, teleporterState, path):
+    successors = problem.getSuccessors(teleporterState)
+    succDict = {}
+    for s in successors:
+        succDict[s[0]] = True
+    newPath = []
+    for i in range(0, len(path)):
+        newPath.append(path[i])
+        if path[i] in succDict.keys():
+            newPath.append(teleporterState)
+            return newPath
+    return newPath;
 
 # Abbreviations
 lbs = logicBasedSearch
