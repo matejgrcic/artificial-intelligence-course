@@ -51,9 +51,10 @@ class NaiveBayesClassifier(object):
             self.prior[label] = (priorN.get(label) + self.k)/float(len(trainingLabels) + self.k * len(self.legalLabels))
 
         for key in conditionalProbN.keys():
-            # self.conditionalProb[key] = (conditionalProbN[key] + self.k)/float(priorN[key[1]] + self.k + len(self.features)) # (2 najbolje)
-            self.conditionalProb[key] = (conditionalProbN[key] + self.k)/float(priorN[key[1]] + self.k * len(self.features)) # (1 najbolje)
-            # self.conditionalProb[key] = (conditionalProbN[key] + self.k)/float(len(trainingLabels) + self.k * len(self.features))
+            coeff = 0
+            if key[0] in self.featureValues.keys():
+                coeff = len(self.featureValues[key[0]])
+            self.conditionalProb[key] = (conditionalProbN[key] + self.k)/float(priorN[key[1]] + self.k * coeff)
         "*** YOUR CODE HERE ***"
 
     def predict(self, testData):
