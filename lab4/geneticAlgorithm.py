@@ -1,5 +1,4 @@
 import numpy as np
-import random
 
 
 class GeneticAlgorithm(object):
@@ -25,7 +24,6 @@ class GeneticAlgorithm(object):
         self.k = mutationScale  # scale of the gaussian noise
 
         self.i = 0  # iteration counter
-
         # initialize the population randomly from a gaussian distribution
         # with noise 0.1 and then sort the values and store them internally
 
@@ -45,15 +43,12 @@ class GeneticAlgorithm(object):
             you should create a whole new population by first keeping the best
             units as defined by elitism, then iteratively select parents from
             the current population, apply crossover and then mutation.
-
             The step function should return, as a tuple:
-
             * boolean value indicating should the iteration stop (True if
                 the learning process is finished, False othwerise)
             * an integer representing the current iteration of the
                 algorithm
             * the weights of the best unit in the current iteration
-
         """
 
         self.i += 1
@@ -61,16 +56,16 @@ class GeneticAlgorithm(object):
         #############################
         #       YOUR CODE HERE      #
         #############################
-        nextPopulation = self.bestN(self.keep)
-        while len(nextPopulation) < self.populationSize:
+        new_population = self.bestN(self.keep)
+        while len(new_population) < self.populationSize:
             parents = self.selectParents()
             child = self.crossover(*parents)
-            child = self.mutate(child)
+            child = self.mutate(child);
             fitness = self.calculateFitness(child)
-            nextPopulation.append((child,fitness))
-        self.population = nextPopulation
-        self.population = sorted(self.population, key=lambda t: -t[1])
-        return self.numIter == self.i, self.i, self.best()
+            new_population.append((child, fitness))
+        self.population = sorted(new_population, key=lambda t: -t[1])
+        should_stop = self.i > self.numIter or self.best()[1] < self.e
+        return should_stop, self.i, self.best()[0]
 
     def calculateFitness(self, chromosome):
         """
@@ -82,7 +77,7 @@ class GeneticAlgorithm(object):
         #############################
         #       YOUR CODE HERE      #
         #############################
-        return -chromosomeError
+        return 1 / chromosomeError
 
     def bestN(self, n):
         """
@@ -91,8 +86,6 @@ class GeneticAlgorithm(object):
         #############################
         #       YOUR CODE HERE      #
         #############################
-        # population = self.population[:]
-        sorted(self.population, key=lambda individual: -individual[1])
         return self.population[0:n]
 
     def best(self):
@@ -102,7 +95,7 @@ class GeneticAlgorithm(object):
         #############################
         #       YOUR CODE HERE      #
         #############################
-        return self.bestN(1)[0]
+        return self.population[0]
 
     def selectParents(self):
         """
@@ -113,28 +106,28 @@ class GeneticAlgorithm(object):
         #############################
         #       YOUR CODE HERE      #
         #############################
-        total = 0.
-        for individual in self.population:
-            total += individual[1]
-        x = random.uniform(0, total)
+        sum = 0
+        for unit in self.population:
+            sum += unit[1]
 
         parents = []
-        sum = 0.
-        for individual in self.population:
-            if sum > x:
-                parents.append(individual)
+        threshold = np.random.uniform(0, sum)
+        current = 0
+        for unit in self.population:
+            current += unit[1]
+            if current > threshold:
+                parents.append(unit)
                 break
-            sum += individual[1]
 
-        sum = 0.
-        for individual in self.population:
-            if sum > x:
-                parents.append(individual)
+        threshold = np.random.uniform(0, sum)
+        current = 0
+        for unit in self.population:
+            current += unit[1]
+            if current > threshold:
+                parents.append(unit)
                 break
-            sum += individual[1]
 
         return parents
-
 
     def crossover(self, p1, p2):
         """
@@ -145,7 +138,7 @@ class GeneticAlgorithm(object):
         #       YOUR CODE HERE      #
         #############################
         child = []
-        for i in range(0,len(p1[0])):
+        for i in range(0, len(p1[0])):
             child.append((p1[0][i] + p2[0][i])/2.)
         return np.array(child)
 
@@ -158,7 +151,7 @@ class GeneticAlgorithm(object):
         #############################
         #       YOUR CODE HERE      #
         #############################
-        for i in range(0, len(chromosome)):
-            if random.random() < self.p:
-                chromosome[i] = np.random.normal(0, self.k)
+        for i in range(len(chromosome)):
+            if np.random.random() < self.p:
+                chromosome[i] += np.random.normal(0, self.k)
         return chromosome

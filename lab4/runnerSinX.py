@@ -3,37 +3,38 @@ from transferFunctions import *
 from neuralNet import *
 from geneticAlgorithm import *
 
+import random
 import plotter
 import matplotlib.pyplot as plt
 import numpy as np
 import dataLoader
-import os, sys
 
 ###
 #   Global constants, I/O paths
 ###
 
-SIN_TRAIN = os.path.join('data', 'sine_train.txt')
-SIN_TEST = os.path.join('data', 'sine_test.txt')
+SIN_TRAIN = './data/sine_train.txt'
+SIN_TEST = './data/sine_test.txt'
 
-RASTRIGIN_TRAIN = os.path.join('data', 'rastrigin_train.txt')
-RASTRIGIN_TEST = os.path.join('data', 'rastrigin_test.txt')
+RASTRIGIN_TRAIN = './data/rastrigin_train.txt'
+RASTRIGIN_TEST = './data/rastrigin_test.txt'
 
-ROSENBROCK_TRAIN = os.path.join('data', 'rosenbrock_train.txt')
-ROSENBROCK_TEST = os.path.join('data', 'rosenbrock_test.txt')
+ROSENBROCK_TRAIN = './data/rosenbrock_train.txt'
+ROSENBROCK_TEST = './data/rosenbrock_test.txt'
 
 if __name__ == '__main__':
     # set the random seed for reproducibility of results
     # setting the random seed forces the same results of randoming each
     # time you start the program - that way you can demonstrate your results
     np.random.seed(11071998)
+    random.seed(11071998)
 
     # Load the train / test data
     # X is the input matrix, y is the target vector
     # X can be a vector (and will be, in the first assignment) as well
 
     """
-        To change the function being approximated, just change the paths 
+        To change the function being approximated, just change the paths
         to the dataset in the arguments of the data loader.s
     """
     X_train, y_train = dataLoader.loadFrom(SIN_TRAIN)
@@ -59,22 +60,15 @@ if __name__ == '__main__':
 
     NN = NeuralNetwork()
 
-
     #  Define the layers of your
     #        neural networks
     #############################
     #       YOUR CODE HERE      #
     #############################
-    n = 12
 
-    NN.addLayer(LinearLayer(input_size, n))
-    NN.addLayer(LinearLayer(n, output_size))
-
-    # NN.addLayer(LinearLayer(input_size, 5))
-    # NN.addLayer(LinearLayer(5, 3))
-    # NN.addLayer(SigmoidLayer())
-    # NN.addLayer(LinearLayer(3, 5))
-    # NN.addLayer(LinearLayer(5, output_size))
+    NN.addLayer(LinearLayer(input_size, 15))
+    NN.addLayer(SigmoidLayer())
+    NN.addLayer(LinearLayer(15, output_size))
 
     ####################
     #  YOUR CODE ENDS  #
@@ -90,7 +84,6 @@ if __name__ == '__main__':
             the genetic algorithm can be applied to any problem that optimizes an error
             (in this case, this function) by updating a vector of values (in this case,
             defined only by the initial size of the vector).
-
             In plain - the genetic algorithm doesn't know that the neural network exists,
             and the neural network doesn't know that the genetic algorithm exists.
         """
@@ -105,16 +98,17 @@ if __name__ == '__main__':
     # on what the parameters are. Feel free to change / adapt any parameters. The defaults
     # are as follows
 
+
     #######################################
     #    MODIFY CODE AT WILL FROM HERE    #
     #######################################
 
     elitism = 1  # Keep this many of top units in each iteration
-    populationSize = 6  # The number of chromosomes
-    mutationProbability = .8  # Probability of mutation
-    mutationScale = 10.  # Standard deviation of the gaussian noise
-    numIterations = 10000  # Number of iterations to run the genetic algorithm for
-    errorTreshold = 1e-6  # Lower threshold for the error while optimizing
+    populationSize = 10 # The number of chromosomes
+    mutationProbability = .05  # Probability of mutation
+    mutationScale = 10  # Standard deviation of the gaussian noise
+    numIterations = 7000  # Number of iterations to run the genetic algorithm for
+    errorTreshold = 1e-3  # Lower threshold for the error while optimizing
 
     GA = GeneticAlgorithm(NN.size(), errorClosure,
                           elitism=elitism,
@@ -125,7 +119,7 @@ if __name__ == '__main__':
                           errorTreshold=errorTreshold)
 
     print_every = 100  # Print the output every this many iterations
-    plot_every = 100  # Plot the actual vs estimated functions every this many iterations
+    plot_every = 10000  # Plot the actual vs estimated functions every this many iterations
 
     # emulated do-while loop
     done = False
@@ -137,8 +131,8 @@ if __name__ == '__main__':
 
         if iteration % plot_every == 0:
             NN.setWeights(best)
-            # plotter.plot(X_train, y_train, NN.output(X_train))
-            # plotter.plot_surface(X_train, y_train, NN)
+            plotter.plot(X_train, y_train, NN.output(X_train))
+            plotter.plot_surface(X_train, y_train, NN)
 
     print "Training done, running on test set"
     NN.setWeights(best)
