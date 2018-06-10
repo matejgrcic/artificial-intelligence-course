@@ -37,8 +37,8 @@ if __name__ == '__main__':
         To change the function being approximated, just change the paths
         to the dataset in the arguments of the data loader.s
     """
-    X_train, y_train = dataLoader.loadFrom(SIN_TRAIN)
-    X_test, y_test = dataLoader.loadFrom(SIN_TEST)
+    X_train, y_train = dataLoader.loadFrom(RASTRIGIN_TRAIN)
+    X_test, y_test = dataLoader.loadFrom(RASTRIGIN_TEST)
 
     # for check, print out the shapes of the input variables
     # the first dimension is the number of input samples, the second dimension
@@ -66,9 +66,9 @@ if __name__ == '__main__':
     #       YOUR CODE HERE      #
     #############################
 
-    NN.addLayer(LinearLayer(input_size, 7))
+    NN.addLayer(LinearLayer(input_size, 10))
     NN.addLayer(SigmoidLayer())
-    NN.addLayer(LinearLayer(7, output_size))
+    NN.addLayer(LinearLayer(10, output_size))
 
     ####################
     #  YOUR CODE ENDS  #
@@ -105,10 +105,12 @@ if __name__ == '__main__':
 
     elitism = 1  # Keep this many of top units in each iteration
     populationSize = 20 # The number of chromosomes
-    mutationProbability = .05  # Probability of mutation
+    mutationProbability = .1  # Probability of mutation
     mutationScale = 0.5  # Standard deviation of the gaussian noise
-    numIterations = 7000  # Number of iterations to run the genetic algorithm for
+    numIterations = 10000  # Number of iterations to run the genetic algorithm for
     errorTreshold = 1e-3  # Lower threshold for the error while optimizing
+
+    # ERROR on test: 1.43224584497
 
     GA = GeneticAlgorithm(NN.size(), errorClosure,
                           elitism=elitism,

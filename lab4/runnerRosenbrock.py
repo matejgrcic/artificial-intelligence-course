@@ -37,8 +37,8 @@ if __name__ == '__main__':
         To change the function being approximated, just change the paths
         to the dataset in the arguments of the data loader.s
     """
-    X_train, y_train = dataLoader.loadFrom(SIN_TRAIN)
-    X_test, y_test = dataLoader.loadFrom(SIN_TEST)
+    X_train, y_train = dataLoader.loadFrom(ROSENBROCK_TRAIN)
+    X_test, y_test = dataLoader.loadFrom(ROSENBROCK_TEST)
 
     # for check, print out the shapes of the input variables
     # the first dimension is the number of input samples, the second dimension
@@ -66,10 +66,17 @@ if __name__ == '__main__':
     #       YOUR CODE HERE      #
     #############################
 
-    NN.addLayer(LinearLayer(input_size, 7))
-    NN.addLayer(SigmoidLayer())
-    NN.addLayer(LinearLayer(7, output_size))
+    # NN.addLayer(LinearLayer(input_size, 10))
+    # NN.addLayer(SigmoidLayer())
+    # NN.addLayer(LinearLayer(10, 10))
+    # NN.addLayer(IdentityLayer())
+    # NN.addLayer(LinearLayer(10, output_size))
 
+    NN.addLayer(LinearLayer(input_size, 8))
+    NN.addLayer(SigmoidLayer())
+    NN.addLayer(LinearLayer(8, 16))
+    NN.addLayer(SigmoidLayer())
+    NN.addLayer(LinearLayer(16, output_size))
     ####################
     #  YOUR CODE ENDS  #
     ####################
@@ -103,12 +110,12 @@ if __name__ == '__main__':
     #    MODIFY CODE AT WILL FROM HERE    #
     #######################################
 
-    elitism = 1  # Keep this many of top units in each iteration
+    elitism = 2  # Keep this many of top units in each iteration
     populationSize = 20 # The number of chromosomes
-    mutationProbability = .05  # Probability of mutation
+    mutationProbability = .7  # Probability of mutation
     mutationScale = 0.5  # Standard deviation of the gaussian noise
-    numIterations = 7000  # Number of iterations to run the genetic algorithm for
-    errorTreshold = 1e-3  # Lower threshold for the error while optimizing
+    numIterations = 25000  # Number of iterations to run the genetic algorithm for
+    errorTreshold = 1e-6  # Lower threshold for the error while optimizing
 
     GA = GeneticAlgorithm(NN.size(), errorClosure,
                           elitism=elitism,
@@ -119,7 +126,7 @@ if __name__ == '__main__':
                           errorTreshold=errorTreshold)
 
     print_every = 100  # Print the output every this many iterations
-    plot_every = 10000  # Plot the actual vs estimated functions every this many iterations
+    plot_every = 20000  # Plot the actual vs estimated functions every this many iterations
 
     # emulated do-while loop
     done = False
